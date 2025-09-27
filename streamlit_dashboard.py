@@ -609,16 +609,21 @@ def main():
     # Sidebar for location selection
     st.sidebar.header("📍 Orte auswählen")
 
-    # Preset selections
+    # Define preset selections after data is processed
+    top_6_recommended = [
+        "Chironico",
+        "Brione",
+        "Magic Wood",
+        "Gottardo / Gotthardpass",
+        "Sustenpass",
+        "Silvapark",
+    ]
+
+    # Filter to only include locations that exist in our data
+    top_6_available = [loc for loc in top_6_recommended if loc in available_locations]
+
     preset_options = {
-        "Top 6 Empfohlen": [
-            "Chironico",
-            "Brione",
-            "Magic Wood",
-            "Gottardo / Gotthardpass",
-            "Sustenpass",
-            "Silvapark",
-        ],
+        "Top 6 Empfohlen": top_6_available,
         "Alle Schweiz": [
             loc
             for loc in available_locations
@@ -647,27 +652,35 @@ def main():
 
     st.sidebar.subheader("Schnellauswahl:")
     selected_preset = st.sidebar.selectbox(
-        "Vordefinierte Auswahl:", ["Benutzerdefiniert"] + list(preset_options.keys())
+        "Vordefinierte Auswahl:",
+        ["Top 6 Empfohlen"] + ["Benutzerdefiniert"] + [k for k in preset_options.keys() if k != "Top 6 Empfohlen"],
+        index=0  # Default to "Top 6 Empfohlen"
     )
 
     if selected_preset != "Benutzerdefiniert":
-        default_locations = [
-            loc for loc in preset_options[selected_preset] if loc in available_locations
-        ]
+        default_locations = preset_options[selected_preset]
     else:
-        default_locations = (
-            available_locations[:6]
-            if len(available_locations) >= 6
-            else available_locations
-        )
+        default_locations = top_6_available if top_6_available else available_locations[:6]
 
-    # Manual selection
+    # Manual selection with reactive update
     st.sidebar.subheader("Manuelle Auswahl:")
+
+    # Use session state to handle preset changes
+    if 'last_preset' not in st.session_state:
+        st.session_state.last_preset = selected_preset
+
+    # If preset changed, update the selection
+    if st.session_state.last_preset != selected_preset:
+        st.session_state.last_preset = selected_preset
+        # Force rerun to update multiselect
+        st.rerun()
+
     selected_locations = st.sidebar.multiselect(
         "Orte auswählen (max. 8 für bessere Darstellung):",
         available_locations,
         default=default_locations,
         max_selections=8,
+        key="location_multiselect"
     )
 
     if not selected_locations:
