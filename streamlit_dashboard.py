@@ -624,7 +624,7 @@ def main():
 
     preset_options = {
         "Top 6 Empfohlen": top_6_available,
-        "Alle Schweiz": [
+        "Schweizer Gebiete": [
             loc
             for loc in available_locations
             if any(
@@ -641,11 +641,11 @@ def main():
                     "Fionnay",
                 ]
             )
-        ],
-        "Top 10 nach Routen": climbing_data.nlargest(10, "route_count")[
+        ][:8],  # Limit to max 8 locations
+        "Top 8 nach Routen": climbing_data.nlargest(8, "route_count")[
             "location_normalized"
         ].tolist(),
-        "Top 10 nach Bewertung": climbing_data.nlargest(10, "avg_stars")[
+        "Top 8 nach Bewertung": climbing_data.nlargest(8, "avg_stars")[
             "location_normalized"
         ].tolist(),
     }
